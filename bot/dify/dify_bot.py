@@ -94,7 +94,7 @@ class DifyBot(Bot):
         chat_client = ChatClient(api_key, api_base)
         response_mode = 'blocking'
         payload = self._get_payload(query, session, response_mode)
-        files = self._get_upload_files(session)
+        files = self._get_upload_files(session, context)
         response = chat_client.create_chat_message(
             inputs=payload['inputs'],
             query=payload['query'],
@@ -235,7 +235,7 @@ class DifyBot(Bot):
         chat_client = ChatClient(api_key, api_base)
         response_mode = 'streaming'
         payload = self._get_payload(query, session, response_mode)
-        files = self._get_upload_files(session)
+        files = self._get_upload_files(session, context)
         response = chat_client.create_chat_message(
             inputs=payload['inputs'],
             query=payload['query'],
@@ -320,13 +320,15 @@ class DifyBot(Bot):
         reply = Reply(ReplyType.TEXT, rsp_data['data']['outputs']['text'])
         return reply, None
 
-    def _get_upload_files(self, session: DifySession):
+    def _get_upload_files(self, session: DifySession, context: Context):
         session_id = session.get_session_id()
         img_cache_list = memory.USER_IMAGE_CACHE.get(session_id)
-        if not img_cache_list or not conf().get("image_recognition"):
+        if not img_cache_list or not self._get_dify_conf(context, "image_recognition", False):
             return None
-        api_key = conf().get('dify_api_key', '')
-        api_base = conf().get("dify_api_base", "https://api.dify.ai/v1")
+        # 清理图片缓存
+        memory.USER_IMAGE_CACHE[session_id] = None
+        api_key = self._get_dify_conf(context, "dify_api_key", '')
+        api_base = self._get_dify_conf(context, "dify_api_base", "https://api.dify.ai/v1")
         dify_client = DifyClient(api_key, api_base)
         session_user = session.get_user()
         

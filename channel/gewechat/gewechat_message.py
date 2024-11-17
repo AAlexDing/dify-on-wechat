@@ -38,7 +38,7 @@ class GeWeChatMessage(ChatMessage):
             self.content = TmpDir().path() + str(self.msg_id) + ".png"
             self._prepare_fn = self.download_image
         else:
-            raise NotImplementedError("Unsupported message type: Type:{}".format(msg_type))
+            logger.error("Unsupported message type: Type:{}".format(msg_type))
 
         self.from_user_id = msg['Data']['FromUserName']['string']
         self.to_user_id = msg['Data']['ToUserName']['string']

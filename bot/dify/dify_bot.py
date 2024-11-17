@@ -144,7 +144,10 @@ class DifyBot(Bot):
                 image_url = self._fill_file_base_url(item['content'])
                 image = self._download_image(image_url)
                 if image:
-                    reply = Reply(ReplyType.IMAGE, image)
+                    if channel.channel_type == "gewechat":
+                        reply = Reply(ReplyType.IMAGE_URL, image_url)
+                    else:
+                        reply = Reply(ReplyType.IMAGE, image)
                 else:
                     reply = Reply(ReplyType.TEXT, f"图片链接：{image_url}")
             elif item['type'] == 'file':
@@ -172,7 +175,10 @@ class DifyBot(Bot):
             image_url = self._fill_file_base_url(final_item['content'])
             image = self._download_image(image_url)
             if image:
-                final_reply = Reply(ReplyType.IMAGE, image)
+                if channel.channel_type == "gewechat":
+                    final_reply = Reply(ReplyType.IMAGE_URL, image_url)
+                else:
+                    final_reply = Reply(ReplyType.IMAGE, image)
             else:
                 final_reply = Reply(ReplyType.TEXT, f"图片链接：{image_url}")
         elif final_item['type'] == 'file':
@@ -316,49 +322,57 @@ class DifyBot(Bot):
 
     def _get_upload_files(self, session: DifySession):
         session_id = session.get_session_id()
-        img_cache = memory.USER_IMAGE_CACHE.get(session_id)
-        if not img_cache or not conf().get("image_recognition"):
+        img_cache_list = memory.USER_IMAGE_CACHE.get(session_id)
+        if not img_cache_list or not conf().get("image_recognition"):
             return None
         api_key = conf().get('dify_api_key', '')
         api_base = conf().get("dify_api_base", "https://api.dify.ai/v1")
         dify_client = DifyClient(api_key, api_base)
-        msg = img_cache.get("msg")
-        path = img_cache.get("path")
-        msg.prepare()
-        with open(path, 'rb') as file:
-            file_name = os.path.basename(path)
-            file_type, _ = mimetypes.guess_type(file_name)
-            files = {
-                'file': (file_name, file, file_type)
-            }
-            response = dify_client.file_upload(user=session.get_user(), files=files)
-            response.raise_for_status()
+        session_user = session.get_user()
+        
+        uploaded_files = []
+        for img_cache in img_cache_list:
+            msg = img_cache.get("msg")
+            path = img_cache.get("path")
+            msg.prepare()
+            with open(path, 'rb') as file:
+                file_name = os.path.basename(path)
+                file_type, _ = mimetypes.guess_type(file_name)
+                files = {
+                    'file': (file_name, file, file_type)
+                }
+                response = dify_client.file_upload(user=session_user, files=files)
+                response.raise_for_status()
 
-            if response.status_code != 200 and response.status_code != 201:
-                error_info = f"[DIFY] response text={response.text} status_code={response.status_code} when upload file"
-                logger.warn(error_info)
-                return None, error_info
+                if response.status_code != 200 and response.status_code != 201:
+                    error_info = f"[DIFY] response text={response.text} status_code={response.status_code} when upload file"
+                    logger.warn(error_info)
+                    return None, error_info
+
+            # {
+            #     'id': 'f508165a-10dc-4256-a7be-480301e630e6',
+            #     'name': '0.png',
+            #     'size': 17023,
+            #     'extension': 'png',
+            #     'mime_type': 'image/png',
+            #     'created_by': '0d501495-cfd4-4dd4-a78b-a15ed4ed77d1',
+            #     'created_at': 1722781568
+            # }
+            file_upload_data = response.json()
+            logger.debug("[DIFY] upload file {}".format(file_upload_data))
+            uploaded_files.append(
+                {
+                    "type": "image",
+                    "transfer_method": "local_file",
+                    "upload_file_id": file_upload_data['id']
+                }
+            )
+            
         # 清理图片缓存
-        memory.USER_IMAGE_CACHE[session_id] = None
-        # {
-        #     'id': 'f508165a-10dc-4256-a7be-480301e630e6',
-        #     'name': '0.png',
-        #     'size': 17023,
-        #     'extension': 'png',
-        #     'mime_type': 'image/png',
-        #     'created_by': '0d501495-cfd4-4dd4-a78b-a15ed4ed77d1',
-        #     'created_at': 1722781568
-        # }
-        file_upload_data = response.json()
-        logger.debug("[DIFY] upload file {}".format(file_upload_data))
-        return [
-            {
-                "type": "image",
-                "transfer_method": "local_file",
-                "upload_file_id": file_upload_data['id']
-            }
-        ]
-
+        memory.USER_IMAGE_CACHE[session_id] = []
+        
+        return uploaded_files
+    
     def _fill_file_base_url(self, url: str):
         if url.startswith("https://") or url.startswith("http://"):
             return url

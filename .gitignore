@@ -27,7 +27,8 @@ plugins/**/config.json
 !plugins/banwords/**/
 plugins/banwords/__pycache__
 plugins/banwords/lib/__pycache__
-!plugins/send_msg
+!plugins/send_message
+!plugins/send_message/**/
 !plugins/hello
 !plugins/role
 !plugins/keyword

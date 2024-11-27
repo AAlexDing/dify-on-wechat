@@ -9,3 +9,5 @@ pre-commit
 web.py
 linkai>=0.0.6.0
 cozepy==0.6
+Flask~=3.0.3
+watchdog~=2.1.3

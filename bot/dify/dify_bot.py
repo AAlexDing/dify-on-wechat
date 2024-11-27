@@ -37,9 +37,23 @@ class DifyBot(Bot):
             channel_type = conf().get("channel_type", "wx")
             user = None
             if channel_type in ["wx", "wework", "gewechat"]:
-                user = context["msg"].other_user_nickname if context.get("msg") else "default"
+                msg = context.get("msg")
+                if msg:
+                    if context.get("isgroup"):
+                        # 群聊场景下使用"群名@用户名"作为user
+                        user = f"{msg.other_user_nickname}@{msg.actual_user_nickname}"
+                        session_id = f"{msg.from_user_id}@{session_id}"
+                    else:
+                        user = msg.other_user_nickname
             elif channel_type in ["wechatcom_app", "wechatmp", "wechatmp_service", "wechatcom_service"]:
-                user = context["msg"].other_user_id if context.get("msg") else "default"
+                msg = context.get("msg")
+                if msg:
+                    if context.get("isgroup"):
+                        # 群聊场景下使用"群名@用户名"作为user 
+                        user = f"{msg.other_user_id}@{msg.actual_user_id}"
+                        session_id = f"{msg.from_user_id}@{session_id}"
+                    else:
+                        user = msg.other_user_id
             else:
                 return Reply(ReplyType.ERROR, f"unsupported channel type: {channel_type}, now dify only support wx, wechatcom_app, wechatmp, wechatmp_service channel")
             logger.debug(f"[DIFY] dify_user={user}")

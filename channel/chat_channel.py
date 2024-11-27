@@ -166,12 +166,6 @@ class ChatChannel(Channel):
     def _handle(self, context: Context):
         if context is None or not context.content:
             return
-        ### 魔改部分
-        
-        if context.type == ContextType.TEXT and memory.USER_IMAGE_CACHE.get(context["session_id"]) and len(memory.USER_IMAGE_CACHE.get(context["session_id"])) > 2:
-            # context.content 包含列表中任何一个字符
-            if not any(keyword in context.content for keyword in ["手绘","深度图","语义分割图","屏幕截图","参考图","渲染图","蒙版","深度","语义分割","参考"]):
-                self._send_reply(context, Reply(ReplyType.TEXT, "我看看哈，图片多稍等一下"))
         
         ###
         logger.debug("[chat_channel] ready to handle context: {}".format(context))
@@ -228,9 +222,16 @@ class ChatChannel(Channel):
                     else:
                         return
             elif context.type == ContextType.IMAGE:  # 图片消息，当前仅做下载保存到本地的逻辑
-                session_id = context["session_id"]
+                if context.get("isgroup", False):
+                    session_id = f"{context['msg'].from_user_id}@{context['session_id']}"
+                else:
+                    session_id = context["session_id"]
+                    
                 if session_id not in memory.USER_IMAGE_CACHE:
                     memory.USER_IMAGE_CACHE[session_id] = []
+                else:
+                    if not memory.USER_IMAGE_CACHE[session_id]:
+                        memory.USER_IMAGE_CACHE[session_id] = []
                 
                 memory.USER_IMAGE_CACHE[session_id].append({
                     "path": context.content,

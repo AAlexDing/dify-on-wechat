@@ -150,6 +150,8 @@ class Query:
         # {'TypeName': 'AddMsg', 'Appid': 'wx_7fPru7ZQkO8sa7ep1yZfP', 'Data': {'MsgId': 687551448, 'FromUserName': {...}, 'ToUserName': {...}, 'MsgType': 1, 'Content': {...}, 'Status': 3, 'ImgStatus': 1, 'ImgBuf': {...}, 'CreateTime': 1732282644, 'MsgSource': '<msgsource>\n\t<sec_msg_node>\n\t\t<alnode>\n\t\t\t<fr>1</fr>\n\t\t</alnode>\n\t</sec_msg_node>\n\t<pua>1</pua>\n\t<signature>V1_CWV/Rvjg|v1_CWV/Rvjg</signature>\n\t<tmp_node>\n\t\t<publisher-id></publisher-id>\n\t</tmp_node>\n</msgsource>\n', 'PushContent': 'Loading... : hi', 'NewMsgId': 3343826003426280399, 'MsgSeq': 1095}, 'Wxid': 'wxid_dpk2goadsqxa19'}
         if data['TypeName'] == 'DifyAddMsg':
             return "success"
+        elif data['TypeName'] == 'ModContact':
+            pass
         gewechat_msg = GeWeChatMessage(data, channel.client)
         
         context = channel._compose_context(

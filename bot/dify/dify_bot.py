@@ -38,6 +38,10 @@ class DifyBot(Bot):
             user = None
             if channel_type in ["wx", "wework", "gewechat"]:
                 msg = context.get("msg")
+                Data = msg.msg.get("Data",{})
+                PushContent = Data.get("PushContent","")
+                if '在群聊中@了你' in PushContent:
+                    msg.actual_user_nickname = PushContent.replace("在群聊中@了你","")
                 if msg:
                     if context.get("isgroup"):
                         # 群聊场景下使用"群名@用户名"作为user
@@ -338,7 +342,7 @@ class DifyBot(Bot):
         session_id = session.get_session_id()
         img_cache_list = memory.USER_IMAGE_CACHE.get(session_id)
         if not img_cache_list or not self._get_dify_conf(context, "image_recognition", False):
-            return None
+            return []
         # 清理图片缓存
         memory.USER_IMAGE_CACHE[session_id] = None
         api_key = self._get_dify_conf(context, "dify_api_key", '')
@@ -380,7 +384,8 @@ class DifyBot(Bot):
                 {
                     "type": "image",
                     "transfer_method": "local_file",
-                    "upload_file_id": file_upload_data['id']
+                    "upload_file_id": file_upload_data['id'],
+                    "url":""
                 }
             )
             

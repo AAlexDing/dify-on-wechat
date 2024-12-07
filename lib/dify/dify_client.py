@@ -58,7 +58,7 @@ class CompletionClient(DifyClient):
 
 
 class ChatClient(DifyClient):
-    def create_chat_message(self, inputs, query, user, response_mode="blocking", conversation_id=None, files=None):
+    def create_chat_message(self, inputs, query, user, response_mode="blocking", conversation_id=None, files=[]):
         data = {
             "inputs": inputs,
             "query": query,

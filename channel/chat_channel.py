@@ -166,7 +166,10 @@ class ChatChannel(Channel):
     def _handle(self, context: Context):
         if context is None or not context.content:
             return
-        
+        ### 魔改部分
+        if context.type == ContextType.TEXT:
+            if "生成" in context.content and "图片" in context.content:
+                self._send_reply(context, Reply(ReplyType.TEXT, "收到~"))
         ###
         logger.debug("[chat_channel] ready to handle context: {}".format(context))
         # reply的构建步骤

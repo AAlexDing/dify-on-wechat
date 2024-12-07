@@ -8,6 +8,7 @@ from config import conf
 from lib.gewechat import GewechatClient
 import requests
 import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET
 
 class GeWeChatMessage(ChatMessage):
     def __init__(self, msg, client: GewechatClient):
@@ -57,6 +58,13 @@ class GeWeChatMessage(ChatMessage):
                     self.content = content_xml
             else:
                 self.content = content_xml
+        elif msg_type == 37:  # Add Friend
+            Content = self.msg['Data']['Content']['string']
+            root = ET.fromstring(Content)
+            encryptusername = root.attrib.get('encryptusername')
+            ticket = root.attrib.get('ticket')
+            scene = root.attrib.get('scene')
+            self.client.add_contacts(app_id=self.app_id,scene=scene,option=3,v3=encryptusername,v4=ticket,content='Hi,我是Ding! 你可以问我：你会点什么？')
         else:
             logger.error("Unsupported message type: Type:{}".format(msg_type))
 
@@ -89,7 +97,7 @@ class GeWeChatMessage(ChatMessage):
             self.is_at = '在群聊中@了你' in self.msg.get('Data', {}).get('PushContent', '')
 
             # 如果是群消息，更新content为实际内容（去掉发送者ID）
-            if ':' in self.content:
+            if self.content and ':' in self.content:
                 self.content = self.content.split(':', 1)[1].strip()
         else:
             self.actual_user_id = self.other_user_id

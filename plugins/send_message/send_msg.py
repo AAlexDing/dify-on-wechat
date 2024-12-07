@@ -109,6 +109,7 @@ class FileWatcherPlugin(Plugin):
                 self.token = conf().get("gewechat_token")
                 self.app_id = conf().get("gewechat_app_id")
                 self.channel = GewechatClient(self.base_url, self.token)
+                self._update_contacts_cache("all")
             except Exception as e:
                 logger.error(f"未安装gewechat: {e}")
         else:

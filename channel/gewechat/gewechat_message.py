@@ -7,7 +7,7 @@ from common.tmp_dir import TmpDir
 from config import conf
 from lib.gewechat import GewechatClient
 import requests
-import xml.etree.ElementTree as ET
+
 import xml.etree.ElementTree as ET
 
 class GeWeChatMessage(ChatMessage):
@@ -64,7 +64,7 @@ class GeWeChatMessage(ChatMessage):
             encryptusername = root.attrib.get('encryptusername')
             ticket = root.attrib.get('ticket')
             scene = root.attrib.get('scene')
-            self.client.add_contacts(app_id=self.app_id,scene=scene,option=3,v3=encryptusername,v4=ticket,content='Hi,我是Ding! 你可以问我：你会点什么？')
+            self.client.add_contacts(app_id=self.app_id,scene=scene,option=3,v3=encryptusername,v4=ticket,content='')
         else:
             logger.error("Unsupported message type: Type:{}".format(msg_type))
 

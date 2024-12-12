@@ -225,10 +225,7 @@ class ChatChannel(Channel):
                     else:
                         return
             elif context.type == ContextType.IMAGE:  # 图片消息，当前仅做下载保存到本地的逻辑
-                if context.get("isgroup", False):
-                    session_id = f"{context['msg'].from_user_id}@{context['session_id']}"
-                else:
-                    session_id = context["session_id"]
+                session_id = context["session_id"]
                     
                 if session_id not in memory.USER_IMAGE_CACHE:
                     memory.USER_IMAGE_CACHE[session_id] = []

@@ -37,7 +37,7 @@ from bridge.context import ContextType
 from bridge.reply import Reply, ReplyType
 from plugins import *
 import plugins
-from plugins.send_message.file_api import FileWriter
+from plugins.send_msg.file_api import FileWriter
 from config import conf
 import time
 
